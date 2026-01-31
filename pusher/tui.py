@@ -98,13 +98,13 @@ class FileBrowser:
             if key == ord('q'):
                 break
                 
-            elif key == curses.KEY_UP:
+            elif key == curses.KEY_UP or key == ord('k'):
                 if self.cursor_idx > 0:
                     self.cursor_idx -= 1
                     if self.cursor_idx < self.offset:
                         self.offset -= 1
             
-            elif key == curses.KEY_DOWN:
+            elif key == curses.KEY_DOWN or key == ord('j'):
                 if self.cursor_idx < len(self.files) - 1:
                     self.cursor_idx += 1
                     if self.cursor_idx >= self.offset + (self.height - 4):
@@ -121,7 +121,7 @@ class FileBrowser:
                 else:
                     self.selected.add(rel_path)
             
-            elif key == 10: # Enter
+            elif key == 10 or key == ord('l'): # Enter or Right (dive in)
                 item = self.files[self.cursor_idx]
                 rel_path = self.get_full_rel_path(item)
                 full_path = os.path.join(SOURCE_DIR, rel_path)
@@ -138,6 +138,13 @@ class FileBrowser:
                     self.cursor_idx = 0
                     self.offset = 0
                     self.refresh_file_list()
+            
+            elif key == ord('h'): # Left (go up)
+                if self.current_path != ".":
+                     self.current_path = os.path.dirname(self.current_path)
+                     self.cursor_idx = 0
+                     self.offset = 0
+                     self.refresh_file_list()
             
             elif key == ord('p'):
                 if not self.selected:
