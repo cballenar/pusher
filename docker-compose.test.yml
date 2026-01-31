@@ -1,0 +1,9 @@
+services:
+  app:
+    build: .
+    volumes:
+      - .:/app
+      - ./tests/mock_d1:/mnt/D1
+      - ./tests/mock_b1:/mnt/B1
+    # We want to keep the container running or allow interactive shell
+    command: ["tail", "-f", "/dev/null"] 
