@@ -144,7 +144,7 @@ class FileBrowser:
                     continue
                 
                 # Check for confirmation
-                self.stdscr.addstr(self.height - 2, 0, " Confirm Push? (y/n) ", curses.color_pair(2))
+                self.stdscr.addstr(self.height - 2, 0, " Confirm Push? (y/N) ", curses.color_pair(2))
                 confirm = self.stdscr.getch()
                 if confirm == ord('y'):
                     return list(self.selected)
