@@ -161,10 +161,10 @@ class FileBrowser:
         # Footer
         if self.mode == 'file_selection':
             # footer = " [Space] Select/Deselect  [Enter] Open  [Back] Back  [p] Push  [q] Quit "
-            # Use concise footer
-            footer = " [Spc] Sel  [Ent] Open  [Bk] Back  [p] Push  [q] Quit "
+            # Standardized footer (fits ~75 chars)
+            footer = " [Space] Select  [Enter] Open  [Back] Back  [p] Push  [s] Settings  [q] Quit "
         else:
-            footer = " [Space] Target  [Enter] Open  [Back] Back  [c] Confirm "
+            footer = " [Space] Select  [Enter] Open  [Back] Back  [c] Confirm "
         
         # Draw Footer Bar
         # We can draw it as a solid bar, or as the bottom of the box.
@@ -268,6 +268,9 @@ class FileBrowser:
             rel = list(self.selected)[0]
             return os.path.abspath(os.path.join(self.root_path, rel))
             
+        elif key == ord('s') and self.mode == 'file_selection':
+            return "SETTINGS"
+
         return None
 
     def run(self):

@@ -174,6 +174,24 @@ def main():
             
             if result == "QUIT":
                 return None
+            
+            if result == "SETTINGS":
+                # Rerun setup
+                if run_setup(stdscr, config):
+                    # Reload config
+                    source = config.get("source_dir")
+                    dest = config.get("dest_dir")
+                    # Re-init browser with new source
+                    app = FileBrowser(stdscr, root_path=source, mode='file_selection', title_override="Select Files", y_offset=browser_y, height=browser_h)
+                    # Update info lines
+                    msg_lines = [
+                        f"Source: {source}",
+                        f"Target: {dest}",
+                        "",
+                        "Select the files or folders you want to push.",
+                        "Press [Space] to toggle selection, [p] to Push."
+                    ]
+                continue
                 
             if isinstance(result, list):
                 return result
