@@ -10,40 +10,55 @@ permissions:
 
 jobs:
   build:
-    name: Build Binary
+    name: Build Binaries
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Set up Python
+      # --- Setup QEMU for ARM emulation ---
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+
+      # --- Build x86_64 (Standard Linux) ---
+      - name: Set up Python (x86)
         uses: actions/setup-python@v4
         with:
           python-version: "3.9"
 
-      - name: Install Dependencies
+      - name: Build x86_64 Binary
         run: |
-          python -m pip install --upgrade pip
           pip install pyinstaller
-          # Install package dependencies if any (none for now, just stdlib/curses)
-          # If we had requirements, we'd run: pip install -r requirements.txt
-
-      - name: Build Binary
-        run: |
-          # Build the binary
+          # Build natively on the runner
           pyinstaller --onefile --name pusher --clean pusher/main.py
-
-      - name: Rename Binary
-        run: |
-          # Rename to include OS/Arch to be clear
           mv dist/pusher dist/pusher-linux-x86_64
+          echo "✅ Built x86_64 binary"
 
+      # --- Build ARM64 (Raspberry Pi) via Docker ---
+      - name: Build ARM64 Binary
+        run: |
+          echo "🐳 Building ARM64 binary using QEMU + Docker..."
+          # 1. Build the Docker image for arm64 platform
+          docker build --platform linux/arm64 -t pusher-arm .
+
+          # 2. Run the build script inside the container
+          # We mount current directory to /app so output goes to host ./dist
+          docker run --platform linux/arm64 --rm -v $(pwd):/app pusher-arm ./build_binary.sh
+
+          # 3. Rename output to avoid overwriting (or just clearly label it)
+          # build_binary.sh outputs to dist/pusher
+          mv dist/pusher dist/pusher-linux-aarch64
+          echo "✅ Built ARM64 binary"
+
+      # --- Release ---
       - name: Create Release
         uses: softprops/action-gh-release@v1
         if: startsWith(github.ref, 'refs/tags/')
         with:
-          files: dist/pusher-linux-x86_64
+          files: |
+            dist/pusher-linux-x86_64
+            dist/pusher-linux-aarch64
           generate_release_notes: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -12,12 +12,12 @@ friendly TUI.
 ## Quick Start
 
 Download and install the
-[latest binary](https://github.com/cballenar/pusher/releases/latest) to
-`/usr/local/bin`:
+[latest binary](https://github.com/cballenar/pusher/releases/latest) for your
+architecture to `/usr/local/bin`. For example for Raspberry Pi:
 
 ```bash
-# Download and install
-sudo wget -O /usr/local/bin/pusher https://github.com/cballenar/pusher/releases/latest/download/pusher-linux-x86_64
+# Download
+sudo wget -O /usr/local/bin/pusher https://github.com/cballenar/pusher/releases/latest/download/pusher-linux-aarch64
 sudo chmod +x /usr/local/bin/pusher
 
 # Get pushing!
