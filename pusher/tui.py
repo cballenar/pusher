@@ -219,7 +219,7 @@ class FileBrowser:
                 if os.path.isdir(full_path_item):
                     self.selected = {rel_path}
 
-        elif key == 10 or key == ord('l'): # Enter or Right
+        elif key == 10 or key == ord('l') or key == curses.KEY_RIGHT: # Enter or Right
             item = self.files[self.cursor_idx]
             rel_path = self.get_full_rel_path(item)
             full_path_item = os.path.join(self.root_path, rel_path)
@@ -239,7 +239,7 @@ class FileBrowser:
                 self.offset = 0
                 self.refresh_file_list()
         
-        elif key in [ord('h'), curses.KEY_BACKSPACE, 127, 8]: # Back
+        elif key in [ord('h'), curses.KEY_BACKSPACE, 127, 8, curses.KEY_LEFT]: # Back
             if self.current_rel_path != ".":
                     self.current_rel_path = os.path.dirname(self.current_rel_path)
                     if not self.current_rel_path:
