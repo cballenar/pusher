@@ -160,11 +160,9 @@ class FileBrowser:
 
         # Footer
         if self.mode == 'file_selection':
-            # footer = " [Space] Select/Deselect  [Enter] Open  [Back] Back  [p] Push  [q] Quit "
-            # Standardized footer (fits ~75 chars)
-            footer = " [Space] Select  [Enter] Open  [Back] Back  [p] Push  [s] Settings  [q] Quit "
+            footer = " [↑/↓] Navigate  [←/→] In/Out  [Space] Select  [Enter] Confirm  [s] Settings  [q] Quit "
         else:
-            footer = " [Space] Select  [Enter] Open  [Back] Back  [c] Confirm "
+            footer = " [↑/↓] Navigate  [←/→] In/Out  [Space] Select  [Enter] Confirm  [q] Quit "
         
         # Draw Footer Bar
         # We can draw it as a solid bar, or as the bottom of the box.
@@ -219,18 +217,15 @@ class FileBrowser:
                 if os.path.isdir(full_path_item):
                     self.selected = {rel_path}
 
-        elif key == 10 or key == ord('l') or key == curses.KEY_RIGHT: # Enter or Right
+        elif key == ord('l') or key == curses.KEY_RIGHT: # Right or l (Enter Directory)
             item = self.files[self.cursor_idx]
             rel_path = self.get_full_rel_path(item)
             full_path_item = os.path.join(self.root_path, rel_path)
             
-            if item == "..":
-                self.current_rel_path = os.path.dirname(self.current_rel_path)
-                if not self.current_rel_path:
-                    self.current_rel_path = "."
-                self.cursor_idx = 0
-                self.offset = 0
-                self.refresh_file_list()
+            if item == "..": 
+                # Going right on .. doesn't make sense.
+                # Let's keep it strict: Right = Go In. 
+                pass
             elif item == ".":
                 pass 
             elif os.path.isdir(full_path_item):
@@ -248,26 +243,31 @@ class FileBrowser:
                     self.offset = 0
                     self.refresh_file_list()
         
-        elif key == ord('p') and self.mode == 'file_selection':
-            if not self.selected:
-                return
-            # Check for confirmation
-            # Draw confirm dialog relative to footer?
-            confirm_y = self.y_offset + self.height - 2
-            try:
-                self.stdscr.addstr(confirm_y, 0, " Confirm Push? (y/N) ".ljust(self.width), curses.color_pair(2))
-                confirm = self.stdscr.getch()
-                if confirm == ord('y'):
-                    return list(self.selected)
-            except curses.error:
-                pass
-                
-        elif key == ord('c') and self.mode == 'dir_picker':
-            if not self.selected:
-                    return
-            rel = list(self.selected)[0]
-            return os.path.abspath(os.path.join(self.root_path, rel))
+        elif key == 10: # Enter (Confirm/Push)
+            # DIR PICKER: Confirm directory
+            if self.mode == 'dir_picker':
+                 # Explicit selection required.
+                 if not self.selected:
+                     return None
+                     
+                 rel = list(self.selected)[0]
+                 return os.path.abspath(os.path.join(self.root_path, rel))
             
+            # FILE SELECTION: Push
+            elif self.mode == 'file_selection':
+                if not self.selected:
+                    return None
+                
+                # Show Confirmation Dialog
+                confirm_y = self.y_offset + self.height - 2
+                try:
+                    self.stdscr.addstr(confirm_y, 0, " Push selection? (y/N) ".ljust(self.width), curses.color_pair(2))
+                    confirm = self.stdscr.getch()
+                    if confirm == ord('y'):
+                        return list(self.selected)
+                except curses.error:
+                    pass
+                
         elif key == ord('s') and self.mode == 'file_selection':
             return "SETTINGS"
 
