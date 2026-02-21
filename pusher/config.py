@@ -10,7 +10,8 @@ class Config:
         self.config_file = self.config_dir / "config.json"
         self.data = {
             "source_dir": None,
-            "dest_dir": None
+            "dest_dir": None,
+            "link_mode": False
         }
         self.load()
 

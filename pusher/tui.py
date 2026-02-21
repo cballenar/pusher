@@ -14,12 +14,14 @@ def setup_colors():
     curses.init_pair(5, curses.COLOR_WHITE, curses.COLOR_BLUE) # Header
 
 class FileBrowser:
-    def __init__(self, stdscr, root_path, mode='file_selection', title_override=None, y_offset=0, height=None):
+    def __init__(self, stdscr, root_path, mode='file_selection', title_override=None, y_offset=0, height=None, operation="Push"):
         self.stdscr = stdscr
         self.root_path = os.path.abspath(root_path)
         self.current_rel_path = "."
         self.mode = mode # 'file_selection' or 'dir_picker'
         self.title_override = title_override
+        
+        self.operation = operation  # "Push" or "Link"
         
         self.y_offset = y_offset
         max_h, max_w = stdscr.getmaxyx()
@@ -261,7 +263,7 @@ class FileBrowser:
                 # Show Confirmation Dialog
                 confirm_y = self.y_offset + self.height - 2
                 try:
-                    self.stdscr.addstr(confirm_y, 0, " Push selection? (y/N) ".ljust(self.width), curses.color_pair(2))
+                    self.stdscr.addstr(confirm_y, 0, f" {self.operation} selection? (y/N) ".ljust(self.width), curses.color_pair(2))
                     confirm = self.stdscr.getch()
                     if confirm == ord('y'):
                         return list(self.selected)

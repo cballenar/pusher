@@ -3,7 +3,7 @@ import sys
 import curses
 import os
 from pusher.tui import FileBrowser, setup_colors
-from pusher.core import push_files
+from pusher.core import push_files, link_files
 from pusher.config import Config
 
 def pick_directory(stdscr, start_path, title):
@@ -123,6 +123,26 @@ def run_setup(stdscr, config):
                 
     config.set("source_dir", source)
     config.set("dest_dir", target)
+
+    # --- PHASE 3: LINK MODE ---
+
+    msg_lines = [
+        "Last step: operation mode.",
+        "",
+        "Push mode (default): transfers files to the target using rsync.",
+        "Link mode: creates symlinks in the target pointing to the source.",
+        "",
+        "Enable link mode? Press 'y' for Yes, any other key for No."
+    ]
+
+    draw_header(stdscr)
+    for i, line in enumerate(msg_lines):
+        stdscr.addstr(2 + i, 2, line)
+    stdscr.refresh()
+
+    key = stdscr.getch()
+    config.set("link_mode", key == ord('y'))
+
     return True
 
 def main():
@@ -148,16 +168,20 @@ def main():
         H, W = stdscr.getmaxyx()
         browser_y = 10
         browser_h = H - 10
-        
+
+        link_mode = config.get("link_mode", False)
+        operation = "Link" if link_mode else "Push"
+        action_key = "[Enter] to Link" if link_mode else "[Enter] to Push"
+
         # Main Selection Loop
-        app = FileBrowser(stdscr, root_path=source, mode='file_selection', title_override="Select Files", y_offset=browser_y, height=browser_h)
+        app = FileBrowser(stdscr, root_path=source, mode='file_selection', title_override="Select Files", y_offset=browser_y, height=browser_h, operation=operation)
         
         msg_lines = [
             f"Source: {source}",
             f"Target: {dest}",
             "",
             "Select the files or folders you want to push.",
-            "Press [Space] to toggle selection, [p] to Push."
+            f"Press [Space] to toggle selection, {action_key}."
         ]
         
         while True:
@@ -181,15 +205,18 @@ def main():
                     # Reload config
                     source = config.get("source_dir")
                     dest = config.get("dest_dir")
+                    link_mode = config.get("link_mode", False)
+                    operation = "Link" if link_mode else "Push"
+                    action_key = "[Enter] to Link" if link_mode else "[Enter] to Push"
                     # Re-init browser with new source
-                    app = FileBrowser(stdscr, root_path=source, mode='file_selection', title_override="Select Files", y_offset=browser_y, height=browser_h)
+                    app = FileBrowser(stdscr, root_path=source, mode='file_selection', title_override="Select Files", y_offset=browser_y, height=browser_h, operation=operation)
                     # Update info lines
                     msg_lines = [
                         f"Source: {source}",
                         f"Target: {dest}",
                         "",
                         "Select the files or folders you want to push.",
-                        "Press [Space] to toggle selection, [p] to Push."
+                        f"Press [Space] to toggle selection, {action_key}."
                     ]
                 continue
                 
@@ -202,9 +229,14 @@ def main():
         if selected_files:
             source_dir = config.get("source_dir")
             dest_dir = config.get("dest_dir")
-            
-            print(f"Pushing {len(selected_files)} items from {source_dir} to {dest_dir}...")
-            push_files(source_dir, dest_dir, selected_files, dry_run=args.dry_run)
+            link_mode = config.get("link_mode", False)
+
+            if link_mode:
+                print(f"Linking {len(selected_files)} items from {source_dir} to {dest_dir}...")
+                link_files(source_dir, dest_dir, selected_files)
+            else:
+                print(f"Pushing {len(selected_files)} items from {source_dir} to {dest_dir}...")
+                push_files(source_dir, dest_dir, selected_files, dry_run=args.dry_run)
             print("Done.")
         else:
             print("No files selected or operation cancelled.")
