@@ -44,6 +44,36 @@ def push_files(source_path, dest_path, files, dry_run=False):
         print(f"Error during rsync: {e}")
         # In TUI we might want to catch this to show a popup
 
+def link_files(source_path, dest_path, files):
+    """
+    Creates symlinks in dest_path for selected files/directories from source_path.
+    files: list of paths relative to source_path
+    """
+    if not files:
+        return
+
+    for rel_path in files:
+        src = os.path.join(source_path, rel_path)
+        dst = os.path.join(dest_path, rel_path)
+
+        # Create parent directories if needed
+        parent = os.path.dirname(dst)
+        if parent:
+            os.makedirs(parent, exist_ok=True)
+
+        if os.path.islink(dst):
+            os.unlink(dst)
+        elif os.path.exists(dst):
+            print(f"Warning: {dst} already exists and is not a symlink, skipping.")
+            continue
+
+        try:
+            os.symlink(src, dst)
+            print(f"Linked: {dst} -> {src}")
+        except OSError as e:
+            print(f"Error creating symlink {dst}: {e}")
+
+
 def cleanup_empty_dirs(path):
     """Recursively delete empty directories."""
     # This finds all directories, prints them depth first, and rmdir them. 

@@ -8,6 +8,7 @@ friendly TUI.
 - **Keeps Workflows Consistent**, e.g. Move from "Work Folder" to "Archive".
 - **Safe**: Verifies checksums and cleans up source files after transfer.
 - **Persistent**: Remembers your preferences in `~/.config/pusher/config.json`.
+- **Linker Mode**: Optionally create symlinks instead of transferring files.
 
 ## Quick Start
 
@@ -32,8 +33,8 @@ pusher
   `Backspace` to go back.
 - **Pushing Interface**:
   - `Space` to select files/folders.
-  - `p` to **Push** selected files to the target (requires confirmation).
-  - `s` to change **Settings** (Source/Target paths).
+  - `Enter` to **Push** or **Link** selected files/folders (requires confirmation; determined by operation mode set in Settings).
+  - `s` to change **Settings** (Source/Target paths and operation mode).
 
 ### Install from Source
 
